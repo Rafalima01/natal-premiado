@@ -1,0 +1,53 @@
+import type { FeaturedCard } from './types';
+
+/** Destaques de Natal — 4 cards grandes tipo "item de game". */
+export const featured: FeaturedCard[] = [
+  {
+    id: 'mega-natal',
+    eyebrow: 'Edição especial',
+    title: 'Mega Natal',
+    maxPrize: 5000,
+    price: 2,
+    blurb: 'A porta de entrada do evento. Prêmios de eletro, tech e dinheiro na mesma cartela.',
+    icon: '🎁',
+    accent: 'red',
+    badge: { label: 'Mais jogada', tone: 'red', icon: '🔥' },
+    href: '/raspadinha/sonho-de-consumo',
+  },
+  {
+    id: 'noel-da-sorte',
+    eyebrow: 'Exclusiva de dezembro',
+    title: 'Noel da Sorte',
+    maxPrize: 10000,
+    price: 4,
+    blurb: 'O bom velhinho abriu o saco. Prêmios que só existem enquanto o evento durar.',
+    icon: '🎅',
+    accent: 'pine',
+    badge: { label: 'Evento ativo', tone: 'pine', icon: '🎄' },
+    href: '/raspadinha/noel-da-sorte',
+  },
+  {
+    id: 'natal-em-dinheiro',
+    eyebrow: 'Cai no PIX',
+    title: 'Natal em Dinheiro',
+    maxPrize: 2000,
+    price: 2,
+    blurb: 'Sem sorteio, sem espera. Raspou e ganhou, o valor vai direto pra sua chave.',
+    icon: '💰',
+    accent: 'ember',
+    badge: { label: 'Saque na hora', tone: 'ember', icon: '⚡' },
+    href: '/raspadinha/pix-na-conta',
+  },
+  {
+    id: 'christmas-gold',
+    eyebrow: 'Sala VIP',
+    title: 'Christmas Gold',
+    maxPrize: 50000,
+    price: 15,
+    blurb: 'Joias, viagem e barra de ouro. Desbloqueia quando você chega ao nível 5.',
+    icon: '👑',
+    accent: 'gold',
+    badge: { label: 'Nível 5', tone: 'gold', icon: '🔒' },
+    href: '/raspadinha/christmas-gold',
+  },
+];
