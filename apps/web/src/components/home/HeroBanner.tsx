@@ -1,4 +1,4 @@
-import { SantaScene } from '@/components/art/SantaScene';
+import { HeroVisual } from '@/components/home/HeroVisual';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { scratchCards } from '@/data/scratchCards';
@@ -107,7 +107,7 @@ export function HeroBanner() {
 
         {/* ---------------- lado direito ---------------- */}
         <div className="relative z-1 order-first lg:order-none">
-          <SantaScene className="animate-pop" />
+          <HeroVisual className="animate-pop" />
         </div>
       </div>
     </section>

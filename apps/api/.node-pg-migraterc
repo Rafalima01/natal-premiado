@@ -1,0 +1,5 @@
+{
+  "migrations-dir": "migrations",
+  "migrations-table": "schema_migrations",
+  "check-order": true
+}

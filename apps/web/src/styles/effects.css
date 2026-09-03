@@ -213,3 +213,37 @@
   margin-inline: 0;
   padding-inline: 0;
 }
+
+/* Enquadramento da arte do Hero (variantes de imagem).
+   A imagem entra com largura de 100% e altura automática, então a caixa do
+   elemento coincide com a arte: escala, deslocamento e fade da base são
+   previsíveis. Só transform/mask — nada que force reflow. */
+@layer components {
+  .hero-art {
+    height: auto;
+    transform: translate3d(var(--art-x, 0), var(--art-y, 0), 0) scale(var(--art-scale-mobile, 1));
+    transform-origin: center center;
+    /* dissolve o recorte reto que os arquivos têm na borda inferior */
+    mask-image:
+      linear-gradient(
+        180deg,
+        transparent 0%,
+        #000 var(--art-fade-top, 0%),
+        #000 calc(100% - var(--art-fade-bottom, 0%)),
+        transparent 100%
+      ),
+      linear-gradient(
+        90deg,
+        transparent 0%,
+        #000 var(--art-fade-side, 0%),
+        #000 calc(100% - var(--art-fade-side, 0%)),
+        transparent 100%
+      );
+    mask-composite: intersect;
+  }
+  @media (min-width: 1024px) {
+    .hero-art {
+      transform: translate3d(var(--art-x, 0), var(--art-y, 0), 0) scale(var(--art-scale, 1));
+    }
+  }
+}

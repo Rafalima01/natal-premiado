@@ -4,3 +4,8 @@ dist-ssr
 *.local
 .DS_Store
 .vite
+
+# ambiente
+.env
+.env.local
+.env.*.local
