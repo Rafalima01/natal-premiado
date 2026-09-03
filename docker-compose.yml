@@ -1,0 +1,23 @@
+# Postgres apenas para desenvolvimento local.
+# Staging e produção usam o banco gerenciado do provedor — este arquivo
+# não descreve nenhum ambiente real.
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: natal-postgres-dev
+    environment:
+      POSTGRES_USER: natal
+      POSTGRES_PASSWORD: natal
+      POSTGRES_DB: natal_dev
+    ports:
+      - "5432:5432"
+    volumes:
+      - natal-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U natal -d natal_dev"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  natal-pgdata:
