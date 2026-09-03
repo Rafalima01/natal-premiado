@@ -16,6 +16,18 @@ import { deriveDisplayName, normalizeEmail, resolvePlayer } from './service.js';
  */
 
 const TEST_DATABASE_URL = process.env['TEST_DATABASE_URL'];
+
+// Trava de segurança: com o .env sendo carregado, DATABASE_URL também está
+// presente durante os testes. Apontar as duas para o mesmo banco faria o
+// TRUNCATE abaixo apagar o banco de desenvolvimento. Falha alto em vez de
+// destruir dados — apagar é irreversível, um teste que não roda não é.
+if (TEST_DATABASE_URL && TEST_DATABASE_URL === process.env['DATABASE_URL']) {
+  throw new Error(
+    'TEST_DATABASE_URL e DATABASE_URL apontam para o mesmo banco. ' +
+      'Os testes de integração executam TRUNCATE: use um banco dedicado a teste.',
+  );
+}
+
 const skip = TEST_DATABASE_URL
   ? false
   : 'TEST_DATABASE_URL ausente — teste de integração pulado';
