@@ -1,17 +1,29 @@
 import { randomUUID } from 'node:crypto';
+import cors from '@fastify/cors';
 import Fastify, {
   type FastifyError,
   type FastifyInstance,
   type FastifyServerOptions,
 } from 'fastify';
 import type { Env } from './config/env.js';
+import { createSupabaseJwtVerifier, type VerifyAccessToken } from './modules/auth/jwt.js';
+import { registerAuth } from './modules/auth/plugin.js';
 import { healthRoutes } from './modules/health/routes.js';
+import { playerRoutes } from './modules/players/routes.js';
+
+export interface BuildAppOptions {
+  /**
+   * Permite injetar um verificador nos testes, evitando rede.
+   * Em produção fica ausente e o verificador vem do JWKS do Supabase.
+   */
+  verifyAccessToken?: VerifyAccessToken;
+}
 
 /**
  * Monta a instância do Fastify. Separado de `server.ts` para que teste de
  * integração possa levantar o app sem abrir porta.
  */
-export function buildApp(env: Env): FastifyInstance {
+export function buildApp(env: Env, options: BuildAppOptions = {}): FastifyInstance {
   const isDev = env.NODE_ENV === 'development';
 
   const logger: FastifyServerOptions['logger'] = {
@@ -49,7 +61,26 @@ export function buildApp(env: Env): FastifyInstance {
     genReqId: () => randomUUID(),
   });
 
+  // Origem explícita, nunca `*`: a API responde a requisições autenticadas e
+  // uma origem curinga com credenciais é recusada pelo próprio navegador.
+  app.register(cors, {
+    origin: env.CORS_ORIGINS,
+    methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    maxAge: 86_400,
+  });
+
+  const verifyAccessToken =
+    options.verifyAccessToken ??
+    createSupabaseJwtVerifier({
+      supabaseUrl: env.SUPABASE_URL,
+      audience: env.SUPABASE_JWT_AUDIENCE,
+    });
+
+  registerAuth(app, verifyAccessToken);
+
   app.register(healthRoutes);
+  app.register(playerRoutes);
 
   app.setNotFoundHandler((request, reply) => {
     reply.code(404).send({
