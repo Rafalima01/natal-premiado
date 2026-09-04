@@ -1,4 +1,5 @@
 import { NavLink, useLocation } from 'react-router-dom';
+import { useSession } from '@/auth/useSession';
 import { Logo } from '@/components/art/Logo';
 import { Button } from '@/components/ui/Button';
 import { LightString } from '@/components/ui/LightString';
@@ -9,6 +10,16 @@ import { cx } from '@/lib/format';
 export function Header() {
   const scrolled = useScrolled(10);
   const { pathname, hash } = useLocation();
+  const { session, player, loading, signOut } = useSession();
+
+  // O player vem da API e pode demorar um instante a mais que a sessão.
+  // Enquanto isso, usa o nome dos metadados do provedor e, no limite, a parte
+  // local do e-mail — o header nunca fica sem rótulo.
+  const displayName =
+    player?.displayName ??
+    (session?.user.user_metadata?.['full_name'] as string | undefined) ??
+    session?.user.email?.split('@')[0] ??
+    'Minha conta';
 
   const isActive = (href: string) => {
     if (href.startsWith('/#')) return pathname === '/' && hash === href.slice(1);
@@ -80,26 +91,51 @@ export function Header() {
           </ul>
         </nav>
 
-        {/* ---------- ações ---------- */}
+        {/* ---------- ações ----------
+            Dois estados, sempre dois elementos no mesmo slot: o espaçamento,
+            os tamanhos e a responsividade não mudam entre deslogado e logado. */}
         <div className="ml-auto flex items-center gap-2 sm:gap-3">
-          {/* o wrapper é que esconde: aplicar `hidden` no próprio botão
-              brigaria com o `inline-flex` da base dele */}
-          <span className="hidden sm:block">
-            <Button to="/login" variant="ghost" size="sm" icon="🔑">
-              Entrar
-            </Button>
-          </span>
+          {loading ? (
+            // Reserva a altura do slot durante a resolução da sessão, para o
+            // header não pular quando os botões aparecerem.
+            <span aria-hidden="true" className="h-9 w-32 rounded-full bg-white/5" />
+          ) : session ? (
+            <>
+              {/* No mobile fica só o ícone: o nome iria empurrar o botão de
+                  sair para fora. O rótulo continua no acessível, para o botão
+                  nunca ficar sem nome. */}
+              <Button to="/perfil" variant="ghost" size="sm" icon="👤">
+                <span className="sr-only sm:hidden">Meu perfil</span>
+                <span className="hidden max-w-[10rem] truncate sm:block">{displayName}</span>
+              </Button>
 
-          <div className="relative">
-            {/* selo de bônus ancorado ao CTA de maior peso */}
-            <span className="pointer-events-none absolute -top-2.5 -right-1.5 z-10 rounded-full bg-linear-to-b from-pine-hi to-pine-deep px-2 py-0.5 font-display text-[0.66rem] font-semibold uppercase tracking-[0.08em] text-bordo-deep shadow-glow-pine animate-pulse-glow">
-              100% extra
-            </span>
-            <Button to="/cadastro" variant="gold" size="sm" icon="🎁">
-              <span className="hidden sm:inline">Cadastre-se</span>
-              <span className="sm:hidden">Criar conta</span>
-            </Button>
-          </div>
+              {/* Rótulo único: este botão desloga nos dois tamanhos. */}
+              <Button variant="ghost" size="sm" icon="🚪" onClick={() => void signOut()}>
+                Sair
+              </Button>
+            </>
+          ) : (
+            <>
+              {/* o wrapper é que esconde: aplicar `hidden` no próprio botão
+                  brigaria com o `inline-flex` da base dele */}
+              <span className="hidden sm:block">
+                <Button to="/login" variant="ghost" size="sm" icon="🔑">
+                  Entrar
+                </Button>
+              </span>
+
+              <div className="relative">
+                {/* selo de bônus ancorado ao CTA de maior peso */}
+                <span className="pointer-events-none absolute -top-2.5 -right-1.5 z-10 rounded-full bg-linear-to-b from-pine-hi to-pine-deep px-2 py-0.5 font-display text-[0.66rem] font-semibold uppercase tracking-[0.08em] text-bordo-deep shadow-glow-pine animate-pulse-glow">
+                  100% extra
+                </span>
+                <Button to="/cadastro" variant="gold" size="sm" icon="🎁">
+                  <span className="hidden sm:inline">Cadastre-se</span>
+                  <span className="sm:hidden">Criar conta</span>
+                </Button>
+              </div>
+            </>
+          )}
         </div>
       </div>
 

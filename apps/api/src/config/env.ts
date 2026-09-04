@@ -21,6 +21,30 @@ const envSchema = z.object({
   DATABASE_POOL_MAX: z.coerce.number().int().positive().max(50).default(10),
 
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace']).default('info'),
+
+  /**
+   * URL do projeto Supabase (ex.: https://abc.supabase.co).
+   * Não é segredo — aparece no bundle do frontend. Daqui saem o JWKS e o
+   * issuer esperado, então um valor errado derruba toda a autenticação.
+   */
+  SUPABASE_URL: z.string().url(),
+
+  /** `aud` esperada nos tokens. O Supabase emite `authenticated`. */
+  SUPABASE_JWT_AUDIENCE: z.string().min(1).default('authenticated'),
+
+  /**
+   * Origens autorizadas no CORS, separadas por vírgula.
+   * O frontend chama a API de outro domínio (Vercel → Railway).
+   */
+  CORS_ORIGINS: z
+    .string()
+    .default('http://localhost:5173')
+    .transform((value) =>
+      value
+        .split(',')
+        .map((origin) => origin.trim())
+        .filter(Boolean),
+    ),
 });
 
 export type Env = z.infer<typeof envSchema>;
