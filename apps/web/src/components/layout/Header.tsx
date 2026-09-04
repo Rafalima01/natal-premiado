@@ -101,15 +101,17 @@ export function Header() {
             <span aria-hidden="true" className="h-9 w-32 rounded-full bg-white/5" />
           ) : session ? (
             <>
-              <span className="hidden sm:block">
-                <Button to="/perfil" variant="ghost" size="sm" icon="👤">
-                  <span className="max-w-[10rem] truncate">{displayName}</span>
-                </Button>
-              </span>
+              {/* No mobile fica só o ícone: o nome iria empurrar o botão de
+                  sair para fora. O rótulo continua no acessível, para o botão
+                  nunca ficar sem nome. */}
+              <Button to="/perfil" variant="ghost" size="sm" icon="👤">
+                <span className="sr-only sm:hidden">Meu perfil</span>
+                <span className="hidden max-w-[10rem] truncate sm:block">{displayName}</span>
+              </Button>
 
+              {/* Rótulo único: este botão desloga nos dois tamanhos. */}
               <Button variant="ghost" size="sm" icon="🚪" onClick={() => void signOut()}>
-                <span className="hidden sm:inline">Sair</span>
-                <span className="sm:hidden">Perfil</span>
+                Sair
               </Button>
             </>
           ) : (
