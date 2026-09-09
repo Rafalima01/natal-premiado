@@ -1,0 +1,41 @@
+# PostgreSQL EFÊMERO para os testes financeiros (ADR 0002, decisão B3).
+#
+# Por que não reaproveitar o banco de desenvolvimento nem o Supabase remoto:
+#
+#   - A suíte financeira executa TRUNCATE. Rodar isso contra um banco com dados
+#     que importam é o tipo de acidente que não tem desfazer (ADR 0002, P4).
+#   - Os testes de ownership e append-only precisam conectar como um papel que
+#     NÃO é dono das tabelas. No Supabase gerenciado o único login disponível é
+#     justamente o dono — o teste passaria por acidente e não mediria nada.
+#
+# `tmpfs` em vez de volume: os dados vivem em memória e somem quando o container
+# para. Não existe estado sobrevivendo entre execuções, que é o que torna a
+# suíte reproduzível.
+#
+# As credenciais aqui são de teste local descartável, nunca de nenhum ambiente
+# real. O login da aplicação usado nos testes de privilégio NÃO está neste
+# arquivo: ele é criado em tempo de execução com senha aleatória por
+# `apps/api/scripts/test-financial.mjs`, e nunca é escrito em disco.
+
+name: natal-financial-test
+
+services:
+  postgres-test:
+    image: postgres:17-alpine
+    container_name: natal-postgres-test
+    environment:
+      # Identidade de migration (ADR 0002, A1): precisa de CREATEROLE para
+      # instalar o modelo de papéis. O superusuário do container serve a esse
+      # papel — em produção, é o usuário administrativo do provedor.
+      POSTGRES_USER: migration_login
+      POSTGRES_PASSWORD: local-test-only
+      POSTGRES_DB: natal_test
+    ports:
+      - '5432:5432'
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U migration_login -d natal_test']
+      interval: 2s
+      timeout: 3s
+      retries: 30

@@ -18,13 +18,13 @@ import { deriveDisplayName, normalizeEmail, resolvePlayer } from './service.js';
 const TEST_DATABASE_URL = process.env['TEST_DATABASE_URL'];
 
 // Trava de segurança: com o .env sendo carregado, DATABASE_URL também está
-// presente durante os testes. Apontar as duas para o mesmo banco faria o
-// TRUNCATE abaixo apagar o banco de desenvolvimento. Falha alto em vez de
-// destruir dados — apagar é irreversível, um teste que não roda não é.
+// presente durante os testes. Apontar as duas para o mesmo banco faria a
+// limpeza abaixo apagar jogadores do banco de desenvolvimento. Falha alto em
+// vez de destruir dados — apagar é irreversível, um teste que não roda não é.
 if (TEST_DATABASE_URL && TEST_DATABASE_URL === process.env['DATABASE_URL']) {
   throw new Error(
     'TEST_DATABASE_URL e DATABASE_URL apontam para o mesmo banco. ' +
-      'Os testes de integração executam TRUNCATE: use um banco dedicado a teste.',
+      'Os testes de integração apagam registros: use um banco dedicado a teste.',
   );
 }
 
@@ -64,11 +64,31 @@ describe('deriveDisplayName', () => {
 });
 
 describe('resolvePlayer (integração)', { skip }, () => {
+  /** Sujeitos usados pelos casos abaixo. A limpeza é restrita a eles. */
+  const SUBJECTS = [
+    '22222222-2222-4222-8222-222222222222',
+    '33333333-3333-4333-8333-333333333333',
+    '44444444-4444-4444-8444-444444444444',
+    '55555555-5555-4555-8555-555555555555',
+    '66666666-6666-4666-8666-666666666666',
+    '77777777-7777-4777-8777-777777777777',
+  ];
+
   before(async () => {
-    pool = new pg.Pool({ connectionString: TEST_DATABASE_URL, max: 12 });
-    // Estado limpo sem derrubar o schema — a migration continua sendo a
-    // dona da estrutura.
-    await pool.query('TRUNCATE TABLE players');
+    pool = new pg.Pool({ connectionString: TEST_DATABASE_URL, max: 8 });
+
+    // Limpeza dirigida, não TRUNCATE. Dois motivos, e nenhum é estilo:
+    //
+    // 1. `wallets` referencia `players` desde a Fase 3, e TRUNCATE em tabela
+    //    referenciada por FK é recusado pelo Postgres. TRUNCATE ... CASCADE
+    //    alcançaria wallet_entries, que é append-only e rejeita TRUNCATE.
+    // 2. Apagar só os sujeitos deste arquivo remove a chance de a suíte
+    //    esvaziar a tabela de players de um banco que não deveria tocar.
+    await pool.query(
+      'DELETE FROM wallets WHERE player_id IN (SELECT id FROM players WHERE auth_user_id = ANY($1::uuid[]))',
+      [SUBJECTS],
+    );
+    await pool.query('DELETE FROM players WHERE auth_user_id = ANY($1::uuid[])', [SUBJECTS]);
   });
 
   after(async () => {

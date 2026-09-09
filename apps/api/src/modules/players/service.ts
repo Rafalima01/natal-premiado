@@ -45,7 +45,7 @@ export function deriveDisplayName(claims: AuthClaims, normalizedEmail: string): 
     .slice(0, 80);
 }
 
-function toIdentity(row: PlayerRow): PlayerIdentity {
+export function toIdentity(row: PlayerRow): PlayerIdentity {
   const status: PlayerStatus = isPlayerStatus(row.status) ? row.status : 'suspended';
   return {
     id: row.id,

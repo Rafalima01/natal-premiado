@@ -1,7 +1,6 @@
 import type { FastifyInstance } from 'fastify';
-import { getPool } from '../../db/pool.js';
 import { getAuth } from '../auth/plugin.js';
-import { resolvePlayer } from './service.js';
+import { resolveIdentity } from '../wallets/service.js';
 
 /**
  * `GET /v1/me` — ponto de entrada do provisionamento.
@@ -11,12 +10,14 @@ import { resolvePlayer } from './service.js';
  * backend verificou contra o JWKS do provedor.
  *
  * Idempotente: chamar N vezes devolve sempre o mesmo `players.id`.
- * Não cria wallet — player sem wallet é estado válido até a Fase 3.
+ *
+ * Desde a Fase 3 também garante as carteiras na mesma transação: o estado
+ * "player existe, wallet não existe" deixou de ser representável (ADR 0002, D4).
  */
 export async function playerRoutes(app: FastifyInstance): Promise<void> {
   app.get('/v1/me', { preHandler: app.requireAuth }, async (request) => {
     const claims = getAuth(request);
-    const result = await resolvePlayer(getPool(), claims);
+    const result = await resolveIdentity(claims);
 
     if (result.provisioned) {
       request.log.info({ playerId: result.player.id }, 'player provisionado');

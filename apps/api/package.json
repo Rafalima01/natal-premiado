@@ -9,10 +9,12 @@
     "build": "tsc -p tsconfig.build.json",
     "start": "node dist/server.js",
     "lint": "tsc -p tsconfig.json --noEmit",
-    "migrate:up": "node-pg-migrate --envPath .env up",
-    "migrate:down": "node-pg-migrate --envPath .env down",
-    "migrate:create": "node-pg-migrate create",
-    "test": "node --env-file-if-exists=.env --import tsx --test \"src/**/*.test.ts\""
+    "migrate:up": "node --env-file-if-exists=.env scripts/migrate.mjs up",
+    "migrate:down": "node --env-file-if-exists=.env scripts/migrate.mjs down",
+    "migrate:status": "node --env-file-if-exists=.env scripts/migrate.mjs up --dry-run",
+    "migrate:create": "node ../../node_modules/node-pg-migrate/bin/node-pg-migrate.js create",
+    "test": "node --import tsx --test \"src/**/*.test.ts\"",
+    "test:financial": "node --env-file-if-exists=.env scripts/test-financial.mjs"
   },
   "dependencies": {
     "@fastify/cors": "^11.3.0",

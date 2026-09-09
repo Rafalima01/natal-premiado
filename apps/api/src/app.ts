@@ -10,6 +10,7 @@ import { createSupabaseJwtVerifier, type VerifyAccessToken } from './modules/aut
 import { registerAuth } from './modules/auth/plugin.js';
 import { healthRoutes } from './modules/health/routes.js';
 import { playerRoutes } from './modules/players/routes.js';
+import { walletRoutes } from './modules/wallets/routes.js';
 
 export interface BuildAppOptions {
   /**
@@ -81,6 +82,7 @@ export function buildApp(env: Env, options: BuildAppOptions = {}): FastifyInstan
 
   app.register(healthRoutes);
   app.register(playerRoutes);
+  app.register(walletRoutes);
 
   app.setNotFoundHandler((request, reply) => {
     reply.code(404).send({

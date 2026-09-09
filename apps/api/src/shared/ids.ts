@@ -14,4 +14,7 @@ import { v7 as uuidv7 } from 'uuid';
  * contador monotônico dentro do mesmo milissegundo e perde exatamente a
  * propriedade que motivou a escolha.
  */
-export const newPlayerId = (): string => uuidv7();
+export const newId = (): string => uuidv7();
+
+/** Id de um jogador. Alias nomeado para deixar a intenção explícita na chamada. */
+export const newPlayerId = newId;
